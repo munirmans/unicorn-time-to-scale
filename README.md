@@ -26,7 +26,19 @@ Final row count after cleaning: 1,070, down from 1,073.
 
 ## Feature Engineering
 
-To be documented.
+| Feature | Definition | Notes |
+|---|---|---|
+| `founding_cohort` | `Year Founded` banded into pre-2000, 2000-2004, 2005-2009, 2010-2014, 2015+ | Built with `pd.cut`, bin edges chosen so the 1990 cleaning cutoff falls inside the first band |
+| `investor_count` | Count of comma-separated names in `Select Investors` | 1 missing value (LinkSure Network) left as missing rather than treated as zero, a company cannot become a unicorn with no backers, so the null reflects an unrecorded value, not an absence |
+| `has_top_tier_investor` | Binary flag for whether Sequoia, Andreessen Horowitz, Tiger Global, Accel, SoftBank, Founders Fund, or Insight Partners appears in `Select Investors` | Case-insensitive substring match, list defined explicitly in the notebook. Same missing-value handling as `investor_count` |
+| `Industry` (cleaned) | Standardized casing before use | Found and fixed a duplicate category: `Artificial intelligence` and `Artificial Intelligence` were being treated as separate industries due to inconsistent capitalization |
+| `industry_grouped` | Industries representing less than 3% of the dataset folded into `Other` | Reduces 15 raw categories to 11, avoids one-hot encoded columns and tree splits built on a handful of rows. Folded: Auto & transportation, Edtech, Consumer & retail, Travel |
+| `continent_grouped` | Same 3% rule applied to `Continent` | Reduces 6 categories to 4. Folded: South America, Oceania, Africa |
+| `valuation_numeric` | Parsed from `Valuation`, see Data Cleaning | Descriptive use, not a model input, see the leakage note below |
+
+`Country/Region` is kept in its raw, ungrouped form and is not used for modeling. Geography for modeling is represented by `continent_grouped`; the raw country column is reserved for the descriptive MENA section.
+
+`Funding` (parsed as `funding_numeric`) is excluded from modeling entirely. It is downstream of the outcome and would leak information about the target. It may appear in a descriptive context only.
 
 ## Exploratory Data Analysis
 
