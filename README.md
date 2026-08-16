@@ -46,6 +46,30 @@ To be documented.
 
 ## Truncation Bias
 
+### The naive result
+
+Grouping `years_to_unicorn` by `founding_cohort` and averaging shows a sharp downward trend:
+
+| Cohort | Mean years to unicorn |
+|---|---|
+| pre-2000 | 21.4 |
+| 2000-2004 | 16.5 |
+| 2005-2009 | 11.5 |
+| 2010-2014 | 7.2 |
+| 2015+ | 4.0 |
+
+At face value, this says unicorns are getting dramatically faster to build.
+
+### Why it is partly illusory
+
+This dataset only contains companies that have already reached $1B, and only as of when it was collected. The most recent `Date Joined` in the data is April 5, 2022, so the dataset was scraped shortly after that date, meaning no company can appear here for having crossed the $1B line after that point.
+
+This creates **right-truncation**: survivorship bias within an incomplete observation window. A company founded in 1995 has had about 27 years to cross the $1B threshold by 2022, enough time for essentially every unicorn from that cohort, fast or slow, to have already appeared. A company founded in 2020 has had at most 2 years, so only its fastest possible movers could have already qualified. Any 2020-founded company that will take 5, 8, or 10 years to scale is still invisible in this dataset right now, not because it failed, but because it has not had time yet.
+
+The consequence: the average computed for recent cohorts only reflects their fastest-scaling members, since the slower ones have not shown up yet. This systematically pulls recent-cohort averages down, which is what produces the sharp naive slope above. Some of that apparent acceleration is real; some of it is an artifact of missing data on companies still in progress.
+
+### Correction
+
 To be documented.
 
 ## Modeling
