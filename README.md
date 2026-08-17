@@ -42,7 +42,11 @@ Final row count after cleaning: 1,070, down from 1,073.
 
 ## Exploratory Data Analysis
 
-To be documented.
+`years_to_unicorn` is right-skewed: most companies cluster in the first several years, with a thinning tail out toward the slowest cases. This is typical of any "time to reach a milestone" variable, there is a hard floor at zero but no equivalent ceiling.
+
+`Valuation` is far more extreme. Since unicorn status is a threshold by definition, almost every company sits close to the $1B floor, with a rapidly thinning tail out to the largest companies (Bytedance at $180B). A plain histogram is unreadable at this range, a log scale is needed to see any structure in the crowded low end. `Valuation` is never used as a model feature, see the leakage note under Modeling.
+
+A boxplot of `years_to_unicorn` by industry shows some industries with a tighter spread than others. This is worth reading carefully: every company in this dataset already reached unicorn status, so a tighter spread does not mean an industry is more likely to succeed, only that the companies which did succeed in that industry did so on a more consistent timeline. The dataset contains no information about companies that tried and did not reach $1B.
 
 ## Truncation Bias
 
@@ -70,7 +74,7 @@ The consequence: the average computed for recent cohorts only reflects their fas
 
 ### Correction
 
-Of the two approaches the plan allows, cohort restriction is used here rather than fitting and comparing two full models, it is simpler and easier to state plainly: "only companies that all had roughly the same amount of time to qualify are being compared."
+There are two reasonable ways to correct for truncation bias: restrict the data to companies with a full, comparable observation window, or fit a model on the restricted data and compare its coefficients against the naive fit. Cohort restriction is used here rather than fitting and comparing two full models, it is simpler and easier to state plainly: "only companies that all had roughly the same amount of time to qualify are being compared." (The coefficient-comparison approach still gets used later, in Modeling, as a second, independent check on this same finding.)
 
 **Rule:** keep only companies founded on or before 2012. Since the dataset's collection cutoff is April 2022, this gives every remaining company roughly 10 years to have reached $1B.
 
@@ -98,7 +102,25 @@ Second, and more importantly, the naive chart's most dramatic data point, `2015+
 
 ## Modeling
 
-To be documented.
+Regression on `years_to_unicorn`, using `founding_cohort`, `industry_grouped`, `continent_grouped`, `investor_count`, and `has_top_tier_investor` as features. `valuation_numeric` and `funding_numeric` are excluded entirely, both are measured at or after the same moment as the outcome itself, so using them would be target leakage.
+
+Three tiers, each run twice, once on the naive full dataset and once on the restricted dataset (founded on or before 2012), with a stratified train and test split so the uneven `founding_cohort` sizes are represented proportionally in both:
+
+1. **Baseline**: predict the training set's median for every row.
+2. **Linear regression**: one-hot encoded categoricals, coefficients are the actual point, not accuracy.
+3. **Random Forest**: for comparison and feature importance.
+
+| Model | Naive MAE | Naive RMSE | Naive R² | Restricted MAE | Restricted RMSE | Restricted R² |
+|---|---|---|---|---|---|---|
+| Baseline | 3.40 | 4.59 | -0.03 | 3.44 | 5.18 | -0.04 |
+| Linear regression | 1.87 | 2.38 | 0.72 | 2.16 | 2.79 | 0.70 |
+| Random Forest | 1.87 | 2.55 | 0.68 | 1.94 | 2.76 | 0.70 |
+
+Both real models comfortably beat the baseline on both datasets, and neither model type is a clear winner over the other. An R² around 0.7 means the models explain a meaningful share of the variation in `years_to_unicorn`, but leave real, honest uncertainty unexplained, which is expected: time to unicorn status depends on many factors this dataset does not capture, and a model that explained nearly all of it would be a sign of leakage, not skill.
+
+**A second, independent confirmation of the truncation finding.** The naive linear model's `founding_cohort` coefficients still show almost the full naive trend even after controlling for industry, continent, and investor features (pre-2000 as the baseline, `2015+` at roughly 18 fewer years). This matters: controlling for more variables in a regression does not fix truncation bias, that is not a modeling mistake, it is structural. Confounding variables can be controlled for because they vary within the data already collected; truncation is about entire rows that do not exist yet, which no predictor column can account for.
+
+Once the model is refit on the restricted dataset, every real `founding_cohort` coefficient shrinks (2000-2004: -5.26 to -4.23; 2005-2009: -10.34 to -9.11; 2010-2014: -14.71 to -12.70), and the Random Forest's feature importances tell the same story a third way: `founding_cohort` accounts for roughly 85% of the naive model's importance, and `founding_cohort_2015+` drops to exactly zero importance once restricted, since that category has no companies left to learn from. Three independent techniques, group means, linear coefficients, and tree-based feature importance, all identify the same dominant signal in the naive data and all show it weakening under a fair comparison.
 
 ## MENA Region
 
