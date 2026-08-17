@@ -94,6 +94,8 @@ Second, and more importantly, the naive chart's most dramatic data point, `2015+
 
 **Interview sentence:** the naive result said unicorns are getting faster. Most of the sharpest part of that result was truncation bias, because recent slow-scaling companies are not in the dataset yet. After restricting to cohorts with a full observation window, a real but more moderate acceleration remained, from 21.4 years before 2000 to 8.1 years for 2010-2014.
 
+![Time to unicorn by founding cohort, naive versus truncation-corrected](reports/figures/naive_vs_corrected_cohort_chart.png)
+
 ## Modeling
 
 To be documented.
