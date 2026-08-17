@@ -70,7 +70,29 @@ The consequence: the average computed for recent cohorts only reflects their fas
 
 ### Correction
 
-To be documented.
+Of the two approaches the plan allows, cohort restriction is used here rather than fitting and comparing two full models, it is simpler and easier to state plainly: "only companies that all had roughly the same amount of time to qualify are being compared."
+
+**Rule:** keep only companies founded on or before 2012. Since the dataset's collection cutoff is April 2022, this gives every remaining company roughly 10 years to have reached $1B.
+
+**Limitation, stated honestly:** `Year Founded` is a whole year, not an exact date, so "founded 2012" could mean January 2012 (about 10 years 3 months by April 2022) or December 2012 (about 9 years 4 months). The rule gives roughly 10 years, not a guaranteed exact 10 for every row. This is a minor, second-order imprecision, a few months, on windows spanning a decade or more, and is not comparable in scale to the original truncation problem it is fixing, which was the difference between a 1-year window and a 27-year window.
+
+### What survives
+
+| Cohort | Naive mean | Restricted mean |
+|---|---|---|
+| pre-2000 | 21.4 | 21.4 |
+| 2000-2004 | 16.5 | 16.5 |
+| 2005-2009 | 11.5 | 11.5 |
+| 2010-2014 | 7.2 | 8.1 |
+| 2015+ | 4.0 | cannot be evaluated, no companies founded after 2012 have had a full window yet |
+
+Two things stand out. First, the `2010-2014` mean rose from 7.2 to 8.1 once the still-partially-observed 2013-2014 companies were removed. This is a direct, concrete confirmation of the truncation mechanism: removing companies that have not had time to finish scaling raises the average, because it is disproportionately the fast movers who show up early, and this was exactly the effect inflating the naive figure downward.
+
+Second, and more importantly, the naive chart's most dramatic data point, `2015+` averaging just 4.0 years, cannot be reproduced under a fair comparison at all. No company founded after 2012 has had enough time yet to be judged on equal footing with the older cohorts, so that number should never have been presented as a real finding.
+
+**What survives:** a real downward trend across `pre-2000` through `2010-2014` (21.4 to 16.5 to 11.5 to 8.1). Companies are still reaching unicorn status meaningfully faster than they did before 2000, even after correcting for the observation window. The acceleration is real, but it is smaller and slower than the naive chart implied, and the naive chart's sharpest-looking claim was substantially an artifact.
+
+**Interview sentence:** the naive result said unicorns are getting faster. Most of the sharpest part of that result was truncation bias, because recent slow-scaling companies are not in the dataset yet. After restricting to cohorts with a full observation window, a real but more moderate acceleration remained, from 21.4 years before 2000 to 8.1 years for 2010-2014.
 
 ## Modeling
 
