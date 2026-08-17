@@ -2,7 +2,7 @@
 
 What predicts how fast a company reaches a one billion dollar valuation, and does the apparent acceleration over time survive scrutiny? This project analyzes 1,073 companies to answer that question, with a specific focus on testing whether the "unicorns are getting faster" trend is real or an artifact of how the data was collected.
 
-This is a living document. Sections below are filled in as the project progresses.
+The full analysis, with all reasoning and code, is in [`notebook.ipynb`](notebook.ipynb).
 
 ## Data
 
@@ -122,6 +122,32 @@ Both real models comfortably beat the baseline on both datasets, and neither mod
 
 Once the model is refit on the restricted dataset, every real `founding_cohort` coefficient shrinks (2000-2004: -5.26 to -4.23; 2005-2009: -10.34 to -9.11; 2010-2014: -14.71 to -12.70), and the Random Forest's feature importances tell the same story a third way: `founding_cohort` accounts for roughly 85% of the naive model's importance, and `founding_cohort_2015+` drops to exactly zero importance once restricted, since that category has no companies left to learn from. Three independent techniques, group means, linear coefficients, and tree-based feature importance, all identify the same dominant signal in the naive data and all show it weakening under a fair comparison.
 
-## MENA Region
+## Regional Concentration and the Israel Comparison
 
-To be documented.
+52.5% of companies are from the United States, 16.1% from China. Together that's over two-thirds of the dataset from just two countries, spread across the other 43. Any single-country number outside these two is standing on a small sample.
+
+Among the smallest-represented countries: `Turkey` and `United Arab Emirates` each have 3 companies, `South Africa` and `Nigeria` each have 1. `Israel` has 20, a genuine outlier given how small a population it's drawn from.
+
+**The three United Arab Emirates companies, named individually** rather than summarized, since an aggregate statistic at n=3 would imply a precision that doesn't exist: **Vista Global** (aviation, founded 2004, 13 years to reach $3B), **Emerging Markets Property Group** (real estate, founded 2015, 5 years to reach $1B), and **Kitopi** (food logistics, founded 2018, 3 years to reach $1B).
+
+**Israel, compared honestly against the two dominant markets:**
+
+| Country | n | Median years to unicorn | Mean years to unicorn |
+|---|---|---|---|
+| Israel | 20 | 6.0 | 7.40 |
+| United States | 562 | 6.0 | 6.80 |
+| China | 172 | 5.0 | 5.85 |
+
+Israel's median matches the United States exactly, and is a year slower than China's. Israel is not a hidden speed outlier, its unicorns scale at roughly the same pace as the two dominant markets. What makes Israel genuinely notable is volume relative to population, not velocity, a different and more defensible claim than "Israeli startups scale faster," which the data does not support.
+
+One honest data-quality note surfaced while checking this section: the raw file lists `Promasidor Holdings` (South Africa) with `Continent` recorded as `Asia`, a data entry error. This didn't require a separate fix, that row was already removed during cleaning as one of the three pre-1990 outliers, for an unrelated reason. It's mentioned here as an example of the same habit that ran through the whole cleaning process: verify a label against the data itself rather than trust it.
+
+**What this section deliberately does not do:** fit a regional model, report a combined average across these small-sample countries as though it means something, or make any predictive claim about a specific country or region. Twenty companies, or three, or one, is not enough to model or generalize from.
+
+## Conclusion
+
+The naive result said unicorns are getting dramatically faster: 21.4 years for companies founded before 2000, down to 4.0 years for companies founded in 2015 or later. Most of the sharpest part of that trend is truncation bias, this dataset only contains companies that already reached $1B by April 2022, so recent, slow-scaling companies simply haven't had time to appear in it yet.
+
+After restricting to cohorts with a full, comparable observation window, a real but more moderate acceleration remained: 21.4 years before 2000, down to 8.1 years for 2010-2014. The same pattern held up under two further, independent checks, linear regression coefficients and Random Forest feature importance, both of which showed `founding_cohort`'s effect shrinking once the truncated rows were removed.
+
+The models explain a meaningful share of the variation in time to unicorn status (R² around 0.7) without claiming more certainty than the data supports, and `Valuation` and `Funding` were kept out of every model entirely, since both are measured at or after the outcome itself. The regional data is concentrated enough that anything below the country level, Israel included, is reported descriptively rather than modeled, on the same principle that shaped every other decision in this analysis: state what the data can support, and no more.
